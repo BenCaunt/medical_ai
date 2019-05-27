@@ -1,7 +1,14 @@
-import tensorflow as tf
-import pandas as pd
+#numpy for matrice math and resizing arrays
 import numpy as np
+import random
+#importing/handling data
+import pandas as pd
 
+seed = random.randint(1,10000)
+np.random.seed(seed)
+import tensorflow as tf
+
+from tensorflow.keras.layers import Dense
 #import data
 df = pd.read_csv('heart.csv')
 
@@ -23,44 +30,25 @@ print(x_test.shape)
 #prints out the datas end
 print(df.tail)
 
-#splits training data
-
-#gets rid of the target variable for training
-x = df.drop(['target'], axis =1)
-x_train = x
-#the target variable that is used to validate a training session
-y = df.target
-y_train = y
-#turn our data into numpy arrays to be reshaoed
-x_train = np.array(x_train)
-y_train = np.array(y_train)
-
 
 
 #creating our neural network with tensorflow and keras
+print(f"random seed is {seed}")
+tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None)
 
-#initializes our model as sequential
 model = tf.keras.models.Sequential()
+model.add(Dense(13, kernel_initializer='random_normal',bias_initializer='random_uniform', activation='elu'))
+model.add(Dense(10, kernel_initializer='random_normal',bias_initializer='random_uniform', activation='relu'))
 
-#adds our input layer with 13 nodes as there is 13 dimensions to train on
-model.add(tf.keras.layers.Dense(13, activation = 'elu'))
+model.add(Dense(2, kernel_initializer='random_normal',bias_initializer='random_uniform', activation='sigmoid'))
+model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+model.fit(x_train, y_train, epochs = 1000)
 
-#adds our hidden layer
-model.add(tf.keras.layers.Dense(7, activation = 'elu'))
+model.evaluate(x_test,y_test)
 
-#our output layer with two nodes as our data has two classes
-model.add(tf.keras.layers.Dense(2, activation = 'elu'))
-
-#compiling our model
-model.compile(optimizer='adam',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-
-model.fit(x_train, y_train, epochs = 15)
+print(model.predict_classes(x_test))
 
 model.summary()
-
-
 
 model_json = model.to_json()
 with open("model.json", "w") as json_file:
